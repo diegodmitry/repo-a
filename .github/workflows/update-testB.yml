@@ -58,12 +58,17 @@
 #             https://api.github.com/repos/diegodmitry/repo-b/actions/secrets/TEST_B \
 #             -d "{\"encrypted_value\":\"${{ env.encrypted_value }}\",\"key_id\":\"${{ env.key_id }}\"}"
 
+# @format
+
 name: Sync Repos
 
 on:
   push:
     branches:
       - main
+  # You can add more triggers, such as scheduled events
+  # schedule:
+  #   - cron: '0 0 * * *'
 
 jobs:
   sync:
@@ -73,22 +78,17 @@ jobs:
       - name: Checkout source repository
         uses: actions/checkout@v2
 
-      - name: Configure Git
+      - name: Push to destination repository
         run: |
           git config --global user.email "diegodmitry@hotmail.com"
           git config --global user.name "Diego Dmitry"
-
-      - name: Clone destination repository
-        run: |
-          git clone https://${{ secrets.PAT }}@github.com/diegodmitry/repo-b.git
-          cd repo-b
-          git remote add source https://${{ secrets.PAT }}@github.com/diegodmitry/repo-a.git
-          git fetch source
-          git merge source/main --allow-unrelated-histories || true
-          git merge --strategy-option ours source/main
-          git checkout --theirs .
-          git add .
-          git commit -m "Resolve merge conflicts by keeping changes from repo-a"
+          git clone https://${{ env.ORG_NAME }}:${{ secrets.PAT }}@github.com/${{ env.ORG_NAME }}/destination-repo.git
+          cd destination-repo
+          git remote add ${{ env.ORIGINAL_REPO_NAME }} https://${{ env.ORG_NAME }}:${{ secrets.PAT }}@github.com/${{ env.ORG_NAME }}/${{ env.ORIGINAL_REPO_NAME }}.git
+          git remote update
+          git merge ${{ env.ORIGINAL_REPO_NAME }}/main
           git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
+          ORIGINAL_REPO_NAME: repo-a
+          ORG_NAME: diegodmitry
