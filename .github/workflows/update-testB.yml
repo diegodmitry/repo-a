@@ -16,14 +16,34 @@ jobs:
         run: |
           echo "TEST_A=$(grep 'TEST_A' .env | cut -d '=' -f2)" >> $GITHUB_ENV
 
+      - name: Fetch Public Key
+        id: fetch_key
+        env:
+          REPO_B_PAT: ${{ secrets.REPO_B_PAT }}
+        run: |
+          curl -s -H "Authorization: token $REPO_B_PAT" \
+            https://api.github.com/repos/diegodmitry/repo-b/actions/secrets/public-key \
+            -o public-key.json
+          echo "key_id=$(jq -r .key_id public-key.json)" >> $GITHUB_ENV
+          echo "public_key=$(jq -r .key public-key.json)" >> $GITHUB_ENV
+
+      - name: Encrypt Secret
+        id: encrypt_secret
+        run: |
+          echo "${{ env.TEST_A }}" | \
+          openssl rsautl -encrypt -pubin -inkey <(echo "${{ env.public_key }}" | base64 -d) | \
+          base64 -w 0 > encrypted_secret.txt
+          echo "encrypted_value=$(cat encrypted_secret.txt)" >> $GITHUB_ENV
+
       - name: Update TEST_B in Repository B
         env:
           REPO_B_PAT: ${{ secrets.REPO_B_PAT }}
-          TEST_A: ${{ env.TEST_A }}
+          key_id: ${{ env.key_id }}
+          encrypted_value: ${{ env.encrypted_value }}
         run: |
           curl -X PUT \
             -H "Authorization: token $REPO_B_PAT" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/diegodmitry/repo-b/actions/secrets/TEST_B \
-            -d "{\"encrypted_value\":\"$(echo -n $TEST_A | base64)\"}"
+            -d "{\"encrypted_value\":\"${{ env.encrypted_value }}\",\"key_id\":\"${{ env.key_id }}\"}"
 
