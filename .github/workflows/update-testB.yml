@@ -84,7 +84,8 @@ jobs:
           cd repo-b
           git remote add source https://${{ secrets.PAT }}@github.com/diegodmitry/repo-a.git
           git fetch source
-          git merge source/main --allow-unrelated-histories
+          git merge source/main --allow-unrelated-histories || true
+          git merge --strategy-option theirs source/main
           git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
