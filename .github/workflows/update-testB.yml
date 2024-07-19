@@ -82,8 +82,8 @@ jobs:
         run: |
           git config --global user.email "diegodmitry@hotmail.com"
           git config --global user.name "Diego Dmitry"
-          git clone https://${{ env.ORG_NAME }}:${{ secrets.PAT }}@github.com/${{ env.ORG_NAME }}/destination-repo.git
-          cd destination-repo
+          git clone https://${{ env.ORG_NAME }}:${{ secrets.PAT }}@github.com/${{ env.ORG_NAME }}/repo-b.git
+          cd repo-b
           git remote add ${{ env.ORIGINAL_REPO_NAME }} https://${{ env.ORG_NAME }}:${{ secrets.PAT }}@github.com/${{ env.ORG_NAME }}/${{ env.ORIGINAL_REPO_NAME }}.git
           git remote update
           git merge ${{ env.ORIGINAL_REPO_NAME }}/main
