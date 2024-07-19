@@ -24,11 +24,17 @@ jobs:
           curl -s -H "Authorization: token $REPO_B_PAT" \
             https://api.github.com/repos/your-username/repo-b/actions/secrets/public-key \
             -o public-key.json
+          cat public-key.json  # Debugging: Print the fetched public key JSON
           echo "key_id=$(jq -r .key_id public-key.json)" >> $GITHUB_ENV
           echo "public_key=$(jq -r .key public-key.json)" >> $GITHUB_ENV
 
+      - name: Debug Public Key
+        run: |
+          echo "Fetched key_id: ${{ env.key_id }}"
+          echo "Fetched public_key: ${{ env.public_key }}"
+
       - name: Encrypt Secret
-        id: encrypt_secret
+        if: ${{ env.key_id }} != 'null' && ${{ env.public_key }} != 'null'
         run: |
           echo "${{ env.TEST_A }}" | \
           openssl pkeyutl -encrypt -pubin -inkey <(echo "${{ env.public_key }}" | base64 -d) -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 | \
@@ -36,6 +42,7 @@ jobs:
           echo "encrypted_value=$(cat encrypted_secret.txt)" >> $GITHUB_ENV
 
       - name: Update TEST_B in Repository B
+        if: ${{ env.key_id }} != 'null' && ${{ env.public_key }} != 'null'
         env:
           REPO_B_PAT: ${{ secrets.REPO_B_PAT }}
           key_id: ${{ env.key_id }}
@@ -47,4 +54,3 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/your-username/repo-b/actions/secrets/TEST_B \
             -d "{\"encrypted_value\":\"${{ env.encrypted_value }}\",\"key_id\":\"${{ env.key_id }}\"}"
-
