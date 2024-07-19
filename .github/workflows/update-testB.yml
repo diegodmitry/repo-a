@@ -33,11 +33,14 @@ jobs:
           echo "Fetched key_id: ${{ env.key_id }}"
           echo "Fetched public_key: ${{ env.public_key }}"
 
+      - name: Install OpenSSL
+        run: sudo apt-get install -y openssl
+
       - name: Encrypt Secret
         if: ${{ env.key_id }} != 'null' && ${{ env.public_key }} != 'null'
         run: |
           echo "${{ env.TEST_A }}" | \
-          openssl pkeyutl -encrypt -pubin -inkey <(echo "${{ env.public_key }}" | base64 -d) -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 | \
+          openssl rsautl -encrypt -pubin -inkey <(echo "${{ env.public_key }}" | base64 -d -A) | \
           base64 -w 0 > encrypted_secret.txt
           echo "encrypted_value=$(cat encrypted_secret.txt)" >> $GITHUB_ENV
 
