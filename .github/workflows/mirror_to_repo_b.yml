@@ -60,12 +60,12 @@
 
 # @format
 
-name: Sync Repos
+# name: Sync Repos
 
-on:
-  push:
-    branches:
-      - main # You can specify other branches if needed
+# on:
+#   push:
+#     branches:
+#       - main # You can specify other branches if needed
   # You can add more triggers, such as scheduled events
   # schedule:
   #   - cron: '0 0 * * *'
@@ -93,19 +93,51 @@ on:
 #           ORIGINAL_REPO_NAME: repo-a
 #           ORG_NAME: diegodmitry
 
+# name: Sync Repos
+
+# on:
+#   push:
+#     branches:
+#       - main # You can specify other branches if needed
+# jobs:
+#   mirror:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Check out the repository
+#         uses: actions/checkout@v2
+#         with:
+#           fetch-depth: 0  # Fetch all history for all branches and tags
+
+#       - name: Push to Repo B
+#         run: |
+#           git remote add mirror https://${{ secrets.PAT }}@github.com/diegodmitry/repo-b.git
+#           git push --mirror mirror
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.PAT }}
+
+name: Test Communication with Repo B
+
+on: 
+  push: 
+    branches: 
+      - main  # Change this to the branch you want to trigger the test on
+  workflow_dispatch:  # Allows manual trigger from the GitHub Actions UI
+
 jobs:
-  mirror:
+  test-communication:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out the repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0  # Fetch all history for all branches and tags
+    - name: Check out the repository
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 
-      - name: Push to Repo B
-        run: |
-          git remote add mirror https://${{ secrets.PAT }}@github.com/diegodmitry/repo-b.git
-          git push --mirror mirror
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+    - name: Test communication with Repo B
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT }}  # Use the PAT stored in the secrets
+      run: |
+        echo "Cloning repo-b to test communication..."
+        git clone https://${{ secrets.PAT }}@github.com/diegodmitry/repo-b.git
+        echo "Successfully cloned repo-b"
