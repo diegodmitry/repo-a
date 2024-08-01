@@ -93,51 +93,54 @@
 #           ORIGINAL_REPO_NAME: repo-a
 #           ORG_NAME: diegodmitry
 
-# name: Sync Repos
+name: Sync Repos
 
-# on:
-#   push:
-#     branches:
-#       - main # You can specify other branches if needed
-# jobs:
-#   mirror:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Check out the repository
-#         uses: actions/checkout@v2
-#         with:
-#           fetch-depth: 0  # Fetch all history for all branches and tags
-
-#       - name: Push to Repo B
-#         run: |
-#           git remote add mirror https://${{ secrets.PAT }}@github.com/diegodmitry/repo-b.git
-#           git push --mirror mirror
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.PAT }}
-
-name: Test Communication with Repo B
-
-on: 
-  push: 
-    branches: 
-      - main  # Change this to the branch you want to trigger the test on
-  workflow_dispatch:  # Allows manual trigger from the GitHub Actions UI
-
+on:
+  push:
+    branches:
+      - main # You can specify other branches if needed
 jobs:
-  test-communication:
+  mirror:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Check out the repository
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+      - name: Check out the repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
 
-    - name: Test communication with Repo B
-      env:
-        GITHUB_TOKEN: ${{ secrets.PAT }}  # Use the PAT stored in the secrets
-      run: |
-        echo "Cloning repo-b to test communication..."
-        git clone https://${{ secrets.PAT }}@github.com/diegodmitry/repo-b.git
-        echo "Successfully cloned repo-b"
+      - name: Push to Repo B
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}  # Use the PAT stored in the secrets
+        run: |
+          git remote add mirror https://${{ secrets.PAT }}@github.com/diegodmitry/repo-b.git
+          git push --mirror mirror
+          echo "The clone was successful cloned repo-b"
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.PAT }}
+
+# name: Test Communication with Repo B
+
+# on: 
+#   push: 
+#     branches: 
+#       - main  # Change this to the branch you want to trigger the test on
+#   workflow_dispatch:  # Allows manual trigger from the GitHub Actions UI
+
+# jobs:
+#   test-communication:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     - name: Check out the repository
+#       uses: actions/checkout@v2
+#       with:
+#         fetch-depth: 0
+
+#     - name: Test communication with Repo B
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.PAT }}  # Use the PAT stored in the secrets
+#       run: |
+#         echo "Cloning repo-b to test communication..."
+#         git clone https://${{ secrets.PAT }}@github.com/diegodmitry/repo-b.git
+#         echo "Successfully cloned repo-b"
