@@ -105,7 +105,7 @@ jobs:
 
       - name: Push to Repo B
         run: |
-          git remote add mirror https://github.com/diegodmitry/repo-b.git
+          git remote add mirror https://${{ secrets.PAT }}@github.com/diegodmitry/repo-b.git
           git push --mirror mirror
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
